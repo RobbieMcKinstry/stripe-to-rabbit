@@ -93,21 +93,21 @@ All environment variables are validated using Zod at startup. See `src/config/in
 
 ### Optional Variables
 
-| Variable                      | Default           | Description                                   |
-| ----------------------------- | ----------------- | --------------------------------------------- |
-| `NODE_ENV`                    | `development`     | Environment mode                              |
-| `PORT`                        | `3000`            | Server port                                   |
+| Variable                      | Default           | Description                                        |
+| ----------------------------- | ----------------- | -------------------------------------------------- |
+| `NODE_ENV`                    | `development`     | Environment mode                                   |
+| `PORT`                        | `3000`            | Server port                                        |
 | `LOG_LEVEL`                   | `info`            | Logging level (debug, info, warning, error, fatal) |
-| `STRIPE_API_VERSION`          | Latest            | Stripe API version                            |
-| `RABBITMQ_PORT`               | `5672`            | RabbitMQ port           |
-| `RABBITMQ_VHOST`              | `/`               | RabbitMQ virtual host   |
-| `RABBITMQ_EXCHANGE`           | `stripe.events`   | Exchange name           |
-| `RABBITMQ_EXCHANGE_TYPE`      | `topic`           | Exchange type           |
-| `RABBITMQ_QUEUE`              | `stripe.webhooks` | Queue name              |
-| `RABBITMQ_ROUTING_KEY`        | `stripe.webhook`  | Base routing key        |
-| `RABBITMQ_USE_SSL`            | `false`           | Enable SSL/TLS          |
-| `RABBITMQ_CONNECTION_TIMEOUT` | `10000`           | Connection timeout (ms) |
-| `RABBITMQ_HEARTBEAT`          | `60`              | Heartbeat interval (s)  |
+| `STRIPE_API_VERSION`          | Latest            | Stripe API version                                 |
+| `RABBITMQ_PORT`               | `5672`            | RabbitMQ port                                      |
+| `RABBITMQ_VHOST`              | `/`               | RabbitMQ virtual host                              |
+| `RABBITMQ_EXCHANGE`           | `stripe.events`   | Exchange name                                      |
+| `RABBITMQ_EXCHANGE_TYPE`      | `topic`           | Exchange type                                      |
+| `RABBITMQ_QUEUE`              | `stripe.webhooks` | Queue name                                         |
+| `RABBITMQ_ROUTING_KEY`        | `stripe.webhook`  | Base routing key                                   |
+| `RABBITMQ_USE_SSL`            | `false`           | Enable SSL/TLS                                     |
+| `RABBITMQ_CONNECTION_TIMEOUT` | `10000`           | Connection timeout (ms)                            |
+| `RABBITMQ_HEARTBEAT`          | `60`              | Heartbeat interval (s)                             |
 
 ## Development
 
