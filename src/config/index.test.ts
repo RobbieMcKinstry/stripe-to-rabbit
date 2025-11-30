@@ -10,20 +10,20 @@ describe('Config Module', () => {
 
   beforeEach(() => {
     vi.resetModules();
-    // Create a fresh copy of process.env
-    process.env = { ...originalEnv };
-    // Clear all env vars that might interfere with tests
-    delete process.env.STRIPE_SECRET_KEY;
-    delete process.env.STRIPE_WEBHOOK_SECRET;
-    delete process.env.RABBITMQ_HOST;
-    delete process.env.RABBITMQ_USER;
-    delete process.env.RABBITMQ_PASSWORD;
-    delete process.env.RABBITMQ_USE_SSL;
-    delete process.env.RABBITMQ_PORT;
-    delete process.env.RABBITMQ_VHOST;
-    delete process.env.RABBITMQ_HEARTBEAT;
-    delete process.env.RABBITMQ_CONNECTION_TIMEOUT;
-    delete process.env.NODE_ENV;
+    // Create a fresh copy of process.env as a mutable object
+    const newEnv: Record<string, string | undefined> = { ...originalEnv };
+    delete newEnv.STRIPE_SECRET_KEY;
+    delete newEnv.STRIPE_WEBHOOK_SECRET;
+    delete newEnv.RABBITMQ_HOST;
+    delete newEnv.RABBITMQ_USER;
+    delete newEnv.RABBITMQ_PASSWORD;
+    delete newEnv.RABBITMQ_USE_SSL;
+    delete newEnv.RABBITMQ_PORT;
+    delete newEnv.RABBITMQ_VHOST;
+    delete newEnv.RABBITMQ_HEARTBEAT;
+    delete newEnv.RABBITMQ_CONNECTION_TIMEOUT;
+    delete newEnv.NODE_ENV;
+    process.env = newEnv as NodeJS.ProcessEnv;
   });
 
   afterEach(() => {
