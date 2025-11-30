@@ -1,6 +1,9 @@
 import amqp, { Channel, Connection } from 'amqplib';
 import { config, getRabbitMQConnectionUrl } from '@/config';
 import Stripe from 'stripe';
+import { getLogger } from '@logtape/logtape';
+
+const logger = getLogger(['stripe-to-rabbit', 'rabbitmq']);
 
 /**
  * RabbitMQ Client for publishing Stripe webhook events
@@ -38,31 +41,31 @@ class RabbitMQClient {
     try {
       const url = getRabbitMQConnectionUrl();
 
-      console.log('Connecting to RabbitMQ...');
+      logger.info('Connecting to RabbitMQ...');
       this.connection = await amqp.connect(url, {
         heartbeat: parseInt(config.RABBITMQ_HEARTBEAT, 10),
         timeout: parseInt(config.RABBITMQ_CONNECTION_TIMEOUT, 10),
       });
 
       this.connection.on('error', (err) => {
-        console.error('RabbitMQ connection error:', err);
+        logger.error('RabbitMQ connection error: {error}', { error: err });
         this.cleanup();
       });
 
       this.connection.on('close', () => {
-        console.log('RabbitMQ connection closed');
+        logger.info('RabbitMQ connection closed');
         this.cleanup();
       });
 
-      console.log('Creating RabbitMQ channel...');
+      logger.info('Creating RabbitMQ channel...');
       this.channel = await this.connection.createChannel();
 
       this.channel.on('error', (err) => {
-        console.error('RabbitMQ channel error:', err);
+        logger.error('RabbitMQ channel error: {error}', { error: err });
       });
 
       this.channel.on('close', () => {
-        console.log('RabbitMQ channel closed');
+        logger.info('RabbitMQ channel closed');
       });
 
       // Assert exchange
@@ -82,9 +85,9 @@ class RabbitMQClient {
         config.RABBITMQ_ROUTING_KEY
       );
 
-      console.log('RabbitMQ connected and configured successfully');
+      logger.info('RabbitMQ connected and configured successfully');
     } catch (error) {
-      console.error('Failed to connect to RabbitMQ:', error);
+      logger.error('Failed to connect to RabbitMQ: {error}', { error });
       this.cleanup();
       throw error;
     }
@@ -136,9 +139,12 @@ class RabbitMQClient {
         throw new Error('Failed to publish message to RabbitMQ (channel buffer full)');
       }
 
-      console.log(`Published Stripe event ${event.id} (${event.type}) to RabbitMQ`);
+      logger.info('Published Stripe event {eventId} ({eventType}) to RabbitMQ', {
+        eventId: event.id,
+        eventType: event.type,
+      });
     } catch (error) {
-      console.error('Error publishing to RabbitMQ:', error);
+      logger.error('Error publishing to RabbitMQ: {error}', { error });
       throw error;
     }
   }
@@ -163,7 +169,7 @@ class RabbitMQClient {
         await this.connection.close();
       }
     } catch (error) {
-      console.error('Error closing RabbitMQ connection:', error);
+      logger.error('Error closing RabbitMQ connection: {error}', { error });
     } finally {
       this.cleanup();
     }

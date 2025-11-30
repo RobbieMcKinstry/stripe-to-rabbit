@@ -8,10 +8,12 @@ A production-ready Next.js webserver that handles Stripe webhooks and publishes 
 - **Stripe Webhook Verification**: Secure webhook signature validation using Stripe SDK
 - **RabbitMQ Integration**: Reliable event publishing to RabbitMQ with connection pooling
 - **Zod v4 Validation**: Type-safe environment variable validation
-- **Error Handling**: Comprehensive error handling and logging
+- **Structured Logging**: LogTape with pretty console output and configurable log levels
+- **Comprehensive Testing**: Vitest with unit tests and coverage reporting
+- **Error Handling**: Robust error handling throughout the application
 - **Health Check**: Built-in health check endpoint
 - **Docker Support**: Production-ready multi-stage Dockerfile
-- **CI/CD**: GitHub Actions for linting and formatting checks
+- **CI/CD**: GitHub Actions for linting, formatting, testing, and build verification
 - **Code Quality**: ESLint and Prettier configured
 
 ## Architecture
@@ -91,11 +93,12 @@ All environment variables are validated using Zod at startup. See `src/config/in
 
 ### Optional Variables
 
-| Variable                      | Default           | Description             |
-| ----------------------------- | ----------------- | ----------------------- |
-| `NODE_ENV`                    | `development`     | Environment mode        |
-| `PORT`                        | `3000`            | Server port             |
-| `STRIPE_API_VERSION`          | Latest            | Stripe API version      |
+| Variable                      | Default           | Description                                   |
+| ----------------------------- | ----------------- | --------------------------------------------- |
+| `NODE_ENV`                    | `development`     | Environment mode                              |
+| `PORT`                        | `3000`            | Server port                                   |
+| `LOG_LEVEL`                   | `info`            | Logging level (debug, info, warning, error, fatal) |
+| `STRIPE_API_VERSION`          | Latest            | Stripe API version                            |
 | `RABBITMQ_PORT`               | `5672`            | RabbitMQ port           |
 | `RABBITMQ_VHOST`              | `/`               | RabbitMQ virtual host   |
 | `RABBITMQ_EXCHANGE`           | `stripe.events`   | Exchange name           |
@@ -139,6 +142,64 @@ pnpm format
 
 # Type check
 pnpm type-check
+```
+
+### Testing
+
+Run the test suite using Vitest:
+
+```bash
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test:watch
+
+# Run tests with UI
+pnpm test:ui
+
+# Generate coverage report
+pnpm test:coverage
+```
+
+**Test Coverage:**
+
+The project includes comprehensive tests for:
+
+- **Configuration validation**: Tests for environment variable validation with Zod
+- **RabbitMQ client**: Tests for connection management and event publishing
+- **Webhook route handler**: Tests for request handling, signature verification, and error cases
+
+Tests are automatically run in the CI/CD pipeline on every push and pull request.
+
+### Logging
+
+The application uses [LogTape](https://logtape.org/) for structured logging with pretty console output.
+
+**Log Levels:**
+
+Control the verbosity of logs using the `LOG_LEVEL` environment variable:
+
+- `debug`: Detailed diagnostic information
+- `info`: General informational messages (default)
+- `warning`: Warning messages
+- `error`: Error messages
+- `fatal`: Critical errors
+
+**Configuration:**
+
+LogTape is configured in `src/lib/logger.ts` and initialized automatically via Next.js instrumentation. Logs are output to the console with:
+
+- Colored output in development mode
+- Structured logging for all application modules
+- Separate log categories for config, RabbitMQ, webhook, and app modules
+
+**Example Log Output:**
+
+```
+[INFO] stripe-to-rabbit.rabbitmq: Connecting to RabbitMQ...
+[INFO] stripe-to-rabbit.webhook: Received Stripe webhook: customer.created (evt_123)
+[INFO] stripe-to-rabbit.rabbitmq: Published Stripe event evt_123 (customer.created) to RabbitMQ
 ```
 
 ## Testing Webhooks Locally
@@ -370,12 +431,19 @@ stripe-to-rabbit/
 │   │   └── api/
 │   │       └── webhooks/
 │   │           └── stripe/
-│   │               └── route.ts          # Webhook handler
+│   │               ├── route.ts          # Webhook handler
+│   │               └── route.test.ts     # Webhook tests
 │   ├── config/
-│   │   └── index.ts                      # Environment config with Zod
+│   │   ├── index.ts                      # Environment config with Zod
+│   │   └── index.test.ts                 # Config tests
 │   └── lib/
-│       └── rabbitmq.ts                   # RabbitMQ client
+│       ├── rabbitmq.ts                   # RabbitMQ client
+│       └── rabbitmq.test.ts              # RabbitMQ tests
+├── .github/
+│   └── workflows/
+│       └── ci.yml                        # CI/CD pipeline
 ├── .env.example                          # Environment template
+├── vitest.config.ts                      # Vitest configuration
 ├── next.config.js                        # Next.js config
 ├── package.json
 └── tsconfig.json
@@ -408,6 +476,7 @@ The project includes a GitHub Actions workflow that runs on every push and pull 
 - **Linting**: ESLint checks for code quality issues
 - **Formatting**: Prettier validates code formatting
 - **Type Checking**: TypeScript compiler validates types
+- **Testing**: Vitest runs all unit tests with coverage reporting
 - **Build**: Ensures the application builds successfully
 
 The workflow is defined in `.github/workflows/ci.yml` and runs on:

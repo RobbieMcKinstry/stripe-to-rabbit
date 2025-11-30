@@ -7,6 +7,7 @@ const envSchema = z.object({
   // Server Configuration
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.string().default('3000'),
+  LOG_LEVEL: z.enum(['debug', 'info', 'warning', 'error', 'fatal']).default('info'),
 
   // Stripe Configuration
   STRIPE_SECRET_KEY: z.string().min(1, 'Stripe secret key is required'),
