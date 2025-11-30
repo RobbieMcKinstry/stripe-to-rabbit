@@ -5,6 +5,10 @@ node_modules/
 
 # Testing
 /coverage
+.features-gen/
+test-results/
+playwright-report/
+playwright/.cache/
 
 # Next.js
 /.next/
