@@ -9,9 +9,7 @@ export default function Home() {
         <p>
           <strong>POST</strong> <code>/api/webhooks/stripe</code>
         </p>
-        <p>
-          Configure this endpoint in your Stripe dashboard to start receiving webhooks.
-        </p>
+        <p>Configure this endpoint in your Stripe dashboard to start receiving webhooks.</p>
       </section>
 
       <section style={{ marginTop: '2rem' }}>
@@ -26,9 +24,7 @@ export default function Home() {
 
       <section style={{ marginTop: '2rem' }}>
         <h2>Documentation</h2>
-        <p>
-          See the README.md file for complete setup and usage instructions.
-        </p>
+        <p>See the README.md file for complete setup and usage instructions.</p>
       </section>
     </main>
   );

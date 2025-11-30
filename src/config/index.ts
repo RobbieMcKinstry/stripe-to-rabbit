@@ -23,7 +23,10 @@ const envSchema = z.object({
   RABBITMQ_EXCHANGE_TYPE: z.enum(['direct', 'topic', 'fanout', 'headers']).default('topic'),
   RABBITMQ_QUEUE: z.string().default('stripe.webhooks'),
   RABBITMQ_ROUTING_KEY: z.string().default('stripe.webhook'),
-  RABBITMQ_USE_SSL: z.string().transform(val => val === 'true').default('false'),
+  RABBITMQ_USE_SSL: z
+    .string()
+    .transform((val) => val === 'true')
+    .default('false'),
   RABBITMQ_CONNECTION_TIMEOUT: z.string().default('10000'),
   RABBITMQ_HEARTBEAT: z.string().default('60'),
 });
@@ -37,12 +40,8 @@ function validateEnv() {
     return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessages = error.errors.map(
-        (err) => `${err.path.join('.')}: ${err.message}`
-      );
-      throw new Error(
-        `Environment variable validation failed:\n${errorMessages.join('\n')}`
-      );
+      const errorMessages = error.errors.map((err) => `${err.path.join('.')}: ${err.message}`);
+      throw new Error(`Environment variable validation failed:\n${errorMessages.join('\n')}`);
     }
     throw error;
   }

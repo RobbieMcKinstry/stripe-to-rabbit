@@ -7,9 +7,12 @@ A production-ready Next.js webserver that handles Stripe webhooks and publishes 
 - **Next.js App Router**: Modern Next.js 14+ with TypeScript support
 - **Stripe Webhook Verification**: Secure webhook signature validation using Stripe SDK
 - **RabbitMQ Integration**: Reliable event publishing to RabbitMQ with connection pooling
-- **Zod Validation**: Type-safe environment variable validation
+- **Zod v4 Validation**: Type-safe environment variable validation
 - **Error Handling**: Comprehensive error handling and logging
 - **Health Check**: Built-in health check endpoint
+- **Docker Support**: Production-ready multi-stage Dockerfile
+- **CI/CD**: GitHub Actions for linting and formatting checks
+- **Code Quality**: ESLint and Prettier configured
 
 ## Architecture
 
@@ -18,6 +21,7 @@ Stripe Webhook → Next.js API Route → Signature Verification → RabbitMQ →
 ```
 
 Events are published to RabbitMQ with:
+
 - **Exchange**: `stripe.events` (topic exchange)
 - **Routing Key**: `stripe.webhook.{event.type}` (e.g., `stripe.webhook.customer.created`)
 - **Queue**: `stripe.webhooks` (durable queue)
@@ -25,28 +29,39 @@ Events are published to RabbitMQ with:
 ## Prerequisites
 
 - Node.js 18+
+- pnpm (recommended) or npm
 - RabbitMQ server (local or remote)
 - Stripe account with webhook configuration
 
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd stripe-to-rabbit
 ```
 
-2. Install dependencies:
+2. Install pnpm (if not already installed):
+
 ```bash
-npm install
+npm install -g pnpm
 ```
 
-3. Configure environment variables:
+3. Install dependencies:
+
+```bash
+pnpm install
+```
+
+4. Configure environment variables:
+
 ```bash
 cp .env.example .env
 ```
 
 Edit `.env` with your configuration:
+
 ```env
 # Stripe Configuration
 STRIPE_SECRET_KEY=sk_test_...
@@ -66,41 +81,64 @@ All environment variables are validated using Zod at startup. See `src/config/in
 
 ### Required Variables
 
-| Variable | Description |
-|----------|-------------|
-| `STRIPE_SECRET_KEY` | Your Stripe secret API key |
+| Variable                | Description                   |
+| ----------------------- | ----------------------------- |
+| `STRIPE_SECRET_KEY`     | Your Stripe secret API key    |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
-| `RABBITMQ_HOST` | RabbitMQ server hostname |
-| `RABBITMQ_USER` | RabbitMQ username |
-| `RABBITMQ_PASSWORD` | RabbitMQ password |
+| `RABBITMQ_HOST`         | RabbitMQ server hostname      |
+| `RABBITMQ_USER`         | RabbitMQ username             |
+| `RABBITMQ_PASSWORD`     | RabbitMQ password             |
 
 ### Optional Variables
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `NODE_ENV` | `development` | Environment mode |
-| `PORT` | `3000` | Server port |
-| `STRIPE_API_VERSION` | Latest | Stripe API version |
-| `RABBITMQ_PORT` | `5672` | RabbitMQ port |
-| `RABBITMQ_VHOST` | `/` | RabbitMQ virtual host |
-| `RABBITMQ_EXCHANGE` | `stripe.events` | Exchange name |
-| `RABBITMQ_EXCHANGE_TYPE` | `topic` | Exchange type |
-| `RABBITMQ_QUEUE` | `stripe.webhooks` | Queue name |
-| `RABBITMQ_ROUTING_KEY` | `stripe.webhook` | Base routing key |
-| `RABBITMQ_USE_SSL` | `false` | Enable SSL/TLS |
-| `RABBITMQ_CONNECTION_TIMEOUT` | `10000` | Connection timeout (ms) |
-| `RABBITMQ_HEARTBEAT` | `60` | Heartbeat interval (s) |
+| Variable                      | Default           | Description             |
+| ----------------------------- | ----------------- | ----------------------- |
+| `NODE_ENV`                    | `development`     | Environment mode        |
+| `PORT`                        | `3000`            | Server port             |
+| `STRIPE_API_VERSION`          | Latest            | Stripe API version      |
+| `RABBITMQ_PORT`               | `5672`            | RabbitMQ port           |
+| `RABBITMQ_VHOST`              | `/`               | RabbitMQ virtual host   |
+| `RABBITMQ_EXCHANGE`           | `stripe.events`   | Exchange name           |
+| `RABBITMQ_EXCHANGE_TYPE`      | `topic`           | Exchange type           |
+| `RABBITMQ_QUEUE`              | `stripe.webhooks` | Queue name              |
+| `RABBITMQ_ROUTING_KEY`        | `stripe.webhook`  | Base routing key        |
+| `RABBITMQ_USE_SSL`            | `false`           | Enable SSL/TLS          |
+| `RABBITMQ_CONNECTION_TIMEOUT` | `10000`           | Connection timeout (ms) |
+| `RABBITMQ_HEARTBEAT`          | `60`              | Heartbeat interval (s)  |
 
 ## Development
 
 Start the development server:
+
 ```bash
-npm run dev
+pnpm dev
 ```
 
 The webhook endpoint will be available at:
+
 ```
 http://localhost:3000/api/webhooks/stripe
+```
+
+### Code Quality
+
+Run linting and formatting checks:
+
+```bash
+# Run ESLint
+pnpm lint
+
+# Fix ESLint issues automatically
+pnpm lint:fix
+
+# Check code formatting
+pnpm format:check
+
+# Format code
+pnpm format
+
+# Type check
+pnpm type-check
 ```
 
 ## Testing Webhooks Locally
@@ -108,6 +146,7 @@ http://localhost:3000/api/webhooks/stripe
 Use the Stripe CLI to forward webhooks to your local server:
 
 1. Install Stripe CLI:
+
 ```bash
 # macOS
 brew install stripe/stripe-cli/stripe
@@ -116,21 +155,25 @@ brew install stripe/stripe-cli/stripe
 ```
 
 2. Login to Stripe:
+
 ```bash
 stripe login
 ```
 
 3. Forward webhooks:
+
 ```bash
 stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 4. Get your webhook signing secret from the CLI output and update `.env`:
+
 ```env
 STRIPE_WEBHOOK_SECRET=whsec_...
 ```
 
 5. Trigger test events:
+
 ```bash
 stripe trigger customer.created
 stripe trigger payment_intent.succeeded
@@ -138,21 +181,78 @@ stripe trigger payment_intent.succeeded
 
 ## Production Deployment
 
+### Option 1: Node.js (Traditional)
+
 1. Build the application:
+
 ```bash
-npm run build
+pnpm build
 ```
 
 2. Start the production server:
+
 ```bash
-npm start
+pnpm start
 ```
 
-3. Configure your Stripe webhook:
-   - Go to https://dashboard.stripe.com/webhooks
-   - Add endpoint: `https://your-domain.com/api/webhooks/stripe`
-   - Select events to listen to
-   - Copy the webhook signing secret to `STRIPE_WEBHOOK_SECRET`
+### Option 2: Docker (Recommended)
+
+1. Build the Docker image:
+
+```bash
+docker build -t stripe-to-rabbit .
+```
+
+2. Run the container:
+
+```bash
+docker run -d \
+  --name stripe-to-rabbit \
+  -p 3000:3000 \
+  --env-file .env \
+  stripe-to-rabbit
+```
+
+Or using Docker Compose:
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    restart: unless-stopped
+```
+
+Then run:
+
+```bash
+docker-compose up -d
+```
+
+### Stripe Webhook Configuration
+
+Configure your Stripe webhook:
+
+- Go to https://dashboard.stripe.com/webhooks
+- Add endpoint: `https://your-domain.com/api/webhooks/stripe`
+- Select events to listen to
+- Copy the webhook signing secret to `STRIPE_WEBHOOK_SECRET`
 
 ## Webhook Endpoint
 
@@ -161,14 +261,17 @@ npm start
 Receives and processes Stripe webhook events.
 
 **Request Headers:**
+
 - `stripe-signature`: Stripe webhook signature (automatically added by Stripe)
 
 **Response Codes:**
+
 - `200`: Event successfully processed and published to RabbitMQ
 - `400`: Invalid signature or missing header
 - `500`: Failed to publish to RabbitMQ (Stripe will retry)
 
 **Success Response:**
+
 ```json
 {
   "received": true,
@@ -182,6 +285,7 @@ Receives and processes Stripe webhook events.
 Health check endpoint.
 
 **Response:**
+
 ```json
 {
   "status": "ok",
@@ -195,6 +299,7 @@ Health check endpoint.
 Events are published with the following structure:
 
 **Message Body:**
+
 ```json
 {
   "id": "evt_...",
@@ -210,6 +315,7 @@ Events are published with the following structure:
 ```
 
 **Message Properties:**
+
 - `persistent`: true
 - `contentType`: application/json
 - `messageId`: Stripe event ID
@@ -220,11 +326,13 @@ Events are published with the following structure:
   - `x-stripe-event-type`: Stripe event type
 
 **Routing Key Pattern:**
+
 ```
 stripe.webhook.{event.type}
 ```
 
 Examples:
+
 - `stripe.webhook.customer.created`
 - `stripe.webhook.payment_intent.succeeded`
 - `stripe.webhook.invoice.payment_failed`
@@ -290,6 +398,23 @@ Key log messages to monitor:
 - `Published Stripe event {id} ({type}) to RabbitMQ` - Successfully published
 - `RabbitMQ connection error` - Connection issues
 - `Failed to publish event to RabbitMQ` - Publishing failures
+
+## CI/CD
+
+The project includes a GitHub Actions workflow that runs on every push and pull request:
+
+**Automated Checks:**
+
+- **Linting**: ESLint checks for code quality issues
+- **Formatting**: Prettier validates code formatting
+- **Type Checking**: TypeScript compiler validates types
+- **Build**: Ensures the application builds successfully
+
+The workflow is defined in `.github/workflows/ci.yml` and runs on:
+
+- Pushes to `main` branch
+- Pushes to `claude/**` branches
+- Pull requests to `main`
 
 ## Security Considerations
 

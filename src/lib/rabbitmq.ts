@@ -66,13 +66,9 @@ class RabbitMQClient {
       });
 
       // Assert exchange
-      await this.channel.assertExchange(
-        config.RABBITMQ_EXCHANGE,
-        config.RABBITMQ_EXCHANGE_TYPE,
-        {
-          durable: true,
-        }
-      );
+      await this.channel.assertExchange(config.RABBITMQ_EXCHANGE, config.RABBITMQ_EXCHANGE_TYPE, {
+        durable: true,
+      });
 
       // Assert queue
       await this.channel.assertQueue(config.RABBITMQ_QUEUE, {

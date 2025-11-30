@@ -19,20 +19,13 @@ export async function POST(req: NextRequest) {
 
     if (!signature) {
       console.error('Missing Stripe signature header');
-      return NextResponse.json(
-        { error: 'Missing stripe-signature header' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 });
     }
 
     // Verify the webhook signature and construct the event
     let event: Stripe.Event;
     try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature,
-        config.STRIPE_WEBHOOK_SECRET
-      );
+      event = stripe.webhooks.constructEvent(body, signature, config.STRIPE_WEBHOOK_SECRET);
     } catch (err) {
       const error = err as Error;
       console.error('Webhook signature verification failed:', error.message);
@@ -53,10 +46,7 @@ export async function POST(req: NextRequest) {
       console.error('Failed to publish event to RabbitMQ:', error);
 
       // Return 500 so Stripe will retry
-      return NextResponse.json(
-        { error: 'Failed to process webhook event' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: 'Failed to process webhook event' }, { status: 500 });
     }
 
     // Return success response
@@ -71,10 +61,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     const error = err as Error;
     console.error('Unexpected error processing webhook:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
