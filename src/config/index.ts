@@ -26,8 +26,8 @@ const envSchema = z.object({
   RABBITMQ_ROUTING_KEY: z.string().default('stripe.webhook'),
   RABBITMQ_USE_SSL: z
     .string()
-    .transform((val) => val === 'true')
-    .default('false'),
+    .default('false')
+    .transform((val) => val === 'true'),
   RABBITMQ_CONNECTION_TIMEOUT: z.string().default('10000'),
   RABBITMQ_HEARTBEAT: z.string().default('60'),
 });

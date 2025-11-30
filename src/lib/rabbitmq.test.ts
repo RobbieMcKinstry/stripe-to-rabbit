@@ -22,13 +22,27 @@ vi.mock('@/config', () => ({
   getRabbitMQConnectionUrl: vi.fn(() => 'amqp://test:test@localhost:5672/'),
 }));
 
+// Mock logger
+vi.mock('@/lib/logger', () => ({
+  initializeLogger: vi.fn(),
+}));
+
+vi.mock('@logtape/logtape', () => ({
+  getLogger: vi.fn(() => ({
+    info: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
+    warning: vi.fn(),
+  })),
+}));
+
 describe('RabbitMQ Client', () => {
   let mockChannel: any;
   let mockConnection: any;
 
   beforeEach(async () => {
-    // Reset modules to ensure clean state
-    vi.resetModules();
+    // Clear all mocks
+    vi.clearAllMocks();
 
     // Create mock channel with all required methods
     mockChannel = {

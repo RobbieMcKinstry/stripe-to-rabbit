@@ -2,15 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { POST, GET } from './route';
 import { NextRequest } from 'next/server';
 
+// Use vi.hoisted to define mock that can be used in factory
+const { mockConstructEvent } = vi.hoisted(() => {
+  return {
+    mockConstructEvent: vi.fn(),
+  };
+});
+
 // Mock dependencies
 vi.mock('stripe', () => {
-  const mockStripe = {
-    webhooks: {
-      constructEvent: vi.fn(),
-    },
-  };
   return {
-    default: vi.fn(() => mockStripe),
+    default: class {
+      webhooks = {
+        constructEvent: mockConstructEvent,
+      };
+    },
   };
 });
 
@@ -26,6 +32,10 @@ vi.mock('@/lib/rabbitmq', () => ({
   getRabbitMQClient: vi.fn(() => ({
     publishStripeEvent: vi.fn().mockResolvedValue(undefined),
   })),
+}));
+
+vi.mock('@/lib/logger', () => ({
+  initializeLogger: vi.fn(),
 }));
 
 describe('Stripe Webhook Route Handler', () => {
@@ -50,9 +60,7 @@ describe('Stripe Webhook Route Handler', () => {
         api_version: '2025-01-27.acacia',
       };
 
-      const Stripe = (await import('stripe')).default;
-      const mockStripeInstance = new Stripe('sk_test_123', {} as any);
-      vi.mocked(mockStripeInstance.webhooks.constructEvent).mockReturnValue(mockEvent as any);
+      mockConstructEvent.mockReturnValue(mockEvent as any);
 
       const mockRequest = {
         text: vi.fn().mockResolvedValue('{"test": "data"}'),
@@ -88,9 +96,7 @@ describe('Stripe Webhook Route Handler', () => {
     });
 
     it('should return 400 when signature verification fails', async () => {
-      const Stripe = (await import('stripe')).default;
-      const mockStripeInstance = new Stripe('sk_test_123', {} as any);
-      vi.mocked(mockStripeInstance.webhooks.constructEvent).mockImplementation(() => {
+      mockConstructEvent.mockImplementation(() => {
         throw new Error('Invalid signature');
       });
 
@@ -121,9 +127,7 @@ describe('Stripe Webhook Route Handler', () => {
         api_version: '2025-01-27.acacia',
       };
 
-      const Stripe = (await import('stripe')).default;
-      const mockStripeInstance = new Stripe('sk_test_123', {} as any);
-      vi.mocked(mockStripeInstance.webhooks.constructEvent).mockReturnValue(mockEvent as any);
+      mockConstructEvent.mockReturnValue(mockEvent as any);
 
       const { getRabbitMQClient } = await import('@/lib/rabbitmq');
       vi.mocked(getRabbitMQClient).mockReturnValue({
