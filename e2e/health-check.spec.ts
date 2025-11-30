@@ -1,9 +1,10 @@
 import { loadFeature, describeFeature } from '@amiceli/vitest-cucumber';
 import { expect } from 'vitest';
+import { request, APIResponse } from 'playwright';
 
 const feature = await loadFeature('./e2e/features/health-check.feature');
 
-let response: Response;
+let response: APIResponse;
 let responseData: {
   status?: string;
   message?: string;
@@ -18,13 +19,21 @@ describeFeature(feature, ({ Scenario }) => {
     });
 
     When('I send a GET request to the health check endpoint', async () => {
-      // Make a direct HTTP request to the health check endpoint
-      response = await fetch('http://localhost:3000/api/webhooks/stripe');
+      // Create a Playwright request context for API testing
+      const requestContext = await request.newContext({
+        baseURL: 'http://localhost:3000',
+      });
+
+      // Make a GET request using Playwright's API
+      response = await requestContext.get('/api/webhooks/stripe');
       responseData = await response.json();
+
+      // Clean up the request context
+      await requestContext.dispose();
     });
 
     Then('the response status should be 200', () => {
-      expect(response.status).toBe(200);
+      expect(response.status()).toBe(200);
     });
 
     And('the response should contain status "ok"', () => {
