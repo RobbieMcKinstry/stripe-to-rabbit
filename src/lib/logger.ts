@@ -1,5 +1,5 @@
 import { configure, getConsoleSink } from '@logtape/logtape';
-import { getPrettySink } from '@logtape/pretty';
+import { getPrettyFormatter } from '@logtape/pretty';
 import { config } from '@/config';
 
 // Map our log levels to LogTape log levels
@@ -19,36 +19,38 @@ export function initializeLogger() {
 
   configure({
     sinks: {
-      console: getPrettySink({
-        // Use colored output in development
-        colors: config.NODE_ENV === 'development',
+      console: getConsoleSink({
+        formatter: getPrettyFormatter({
+          // Use colored output in development
+          colors: config.NODE_ENV === 'development',
+        }),
       }),
     },
     filters: {},
     loggers: [
       {
         category: ['stripe-to-rabbit'],
-        level: logLevel,
+        lowestLevel: logLevel,
         sinks: ['console'],
       },
       {
         category: ['stripe-to-rabbit', 'config'],
-        level: logLevel,
+        lowestLevel: logLevel,
         sinks: ['console'],
       },
       {
         category: ['stripe-to-rabbit', 'rabbitmq'],
-        level: logLevel,
+        lowestLevel: logLevel,
         sinks: ['console'],
       },
       {
         category: ['stripe-to-rabbit', 'webhook'],
-        level: logLevel,
+        lowestLevel: logLevel,
         sinks: ['console'],
       },
       {
         category: ['stripe-to-rabbit', 'app'],
-        level: logLevel,
+        lowestLevel: logLevel,
         sinks: ['console'],
       },
     ],

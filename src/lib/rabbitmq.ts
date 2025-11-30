@@ -1,4 +1,4 @@
-import amqp, { Channel, Connection } from 'amqplib';
+import amqp, { Channel, ChannelModel } from 'amqplib';
 import { config, getRabbitMQConnectionUrl } from '@/config';
 import Stripe from 'stripe';
 import { getLogger } from '@logtape/logtape';
@@ -9,7 +9,7 @@ const logger = getLogger(['stripe-to-rabbit', 'rabbitmq']);
  * RabbitMQ Client for publishing Stripe webhook events
  */
 class RabbitMQClient {
-  private connection: Connection | null = null;
+  private connection: ChannelModel | null = null;
   private channel: Channel | null = null;
   private isConnecting: boolean = false;
   private connectionPromise: Promise<void> | null = null;
