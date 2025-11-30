@@ -1,7 +1,5 @@
-import { expect } from '@playwright/test';
-import { createBdd } from 'playwright-bdd';
-
-const { Given, When, Then } = createBdd();
+import { Given, When, Then } from 'quickpickle';
+import { expect } from 'vitest';
 
 let response: Response;
 let responseData: {
@@ -10,30 +8,31 @@ let responseData: {
   timestamp?: string;
 };
 
-Given('the webhook service is running', async ({ page }) => {
-  // Service is assumed to be running via webServer config
-  // This step just validates we can access the page
-  await page.goto('/');
+Given('the webhook service is running', async function () {
+  // Service is assumed to be running
+  // In a real scenario, we might navigate to the page to verify
+  // For now, this is a no-op as the health check is API-only
 });
 
-When('I send a GET request to the health check endpoint', async ({ request }) => {
-  response = await request.get('/api/webhooks/stripe');
+When('I send a GET request to the health check endpoint', async function () {
+  // Make a direct HTTP request to the health check endpoint
+  response = await fetch('http://localhost:3000/api/webhooks/stripe');
   responseData = await response.json();
 });
 
-Then('the response status should be {int}', async ({}, expectedStatus: number) => {
-  expect(response.status()).toBe(expectedStatus);
+Then('the response status should be {int}', async function (expectedStatus) {
+  expect(response.status).toBe(expectedStatus);
 });
 
-Then('the response should contain status {string}', async ({}, expectedStatus: string) => {
+Then('the response should contain status {string}', async function (expectedStatus) {
   expect(responseData.status).toBe(expectedStatus);
 });
 
-Then('the response should contain message {string}', async ({}, expectedMessage: string) => {
+Then('the response should contain message {string}', async function (expectedMessage) {
   expect(responseData.message).toBe(expectedMessage);
 });
 
-Then('the response should contain a valid timestamp', async () => {
+Then('the response should contain a valid timestamp', async function () {
   expect(responseData.timestamp).toBeDefined();
   expect(typeof responseData.timestamp).toBe('string');
 

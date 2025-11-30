@@ -12,10 +12,7 @@
     "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css}\"",
     "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,css}\"",
     "type-check": "tsc --noEmit",
-    "test": "npm run test:unit && npm run test:bdd",
-    "test:unit": "vitest run",
-    "test:bdd:gen": "bddgen",
-    "test:bdd": "npm run test:bdd:gen && playwright test",
+    "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage"
@@ -40,7 +37,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.1",
-    "@playwright/test": "^1.57.0",
+    "@quickpickle/playwright": "^1.0.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
     "@types/amqplib": "^0.10.8",
@@ -55,9 +52,8 @@
     "eslint-config-next": "^16.0.5",
     "eslint-config-prettier": "^10.1.8",
     "happy-dom": "^20.0.11",
-    "playwright": "^1.57.0",
-    "playwright-bdd": "^8.4.2",
     "prettier": "^3.7.3",
+    "quickpickle": "^1.10.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"
   }
