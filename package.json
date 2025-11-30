@@ -1,0 +1,57 @@
+{
+  "name": "stripe-to-rabbit",
+  "version": "1.0.0",
+  "description": "A NextJS webserver that responds to webhooks from Stripe and stores the data in RabbitMQ.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md,css}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md,css}\"",
+    "type-check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://local_proxy@127.0.0.1:20904/git/RobbieMcKinstry/stripe-to-rabbit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@logtape/logtape": "^1.2.2",
+    "@logtape/pretty": "^1.2.2",
+    "amqplib": "^0.10.9",
+    "next": "^16.0.5",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "stripe": "^20.0.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.3",
+    "@eslint/js": "^9.39.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/amqplib": "^0.10.8",
+    "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "@vitest/coverage-v8": "^4.0.14",
+    "@vitest/ui": "^4.0.14",
+    "eslint": "^9.39.1",
+    "eslint-config-next": "^16.0.5",
+    "eslint-config-prettier": "^10.1.8",
+    "happy-dom": "^20.0.11",
+    "prettier": "^3.7.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
+  }
+}
