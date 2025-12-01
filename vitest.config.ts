@@ -5,6 +5,7 @@ import path from 'path';
 export default defineConfig({
   plugins: [react()],
   test: {
+    globalSetup: ['./vitest.global-setup.ts'],
     environment: 'happy-dom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],

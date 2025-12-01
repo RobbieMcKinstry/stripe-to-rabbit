@@ -204,17 +204,9 @@ The BDD tests use Playwright's request context for API testing, providing:
 - Request tracing and debugging capabilities
 - Consistent API patterns for potential future browser tests
 
-**Prerequisites for Running Tests:**
+**Automatic Server Management:**
 
-The BDD tests require the Next.js development server to be running:
-
-```bash
-# Terminal 1: Start the dev server
-pnpm dev
-
-# Terminal 2: Run tests
-pnpm test
-```
+The test suite automatically starts and stops the Next.js development server using Vitest's global setup. You don't need to manually start the server - just run `pnpm test` and the tests will handle server lifecycle automatically.
 
 Tests are automatically run in the CI/CD pipeline on every push and pull request.
 
