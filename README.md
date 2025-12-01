@@ -9,7 +9,8 @@ A production-ready Next.js webserver that handles Stripe webhooks and publishes 
 - **RabbitMQ Integration**: Reliable event publishing to RabbitMQ with connection pooling
 - **Zod v4 Validation**: Type-safe environment variable validation
 - **Structured Logging**: LogTape with pretty console output and configurable log levels
-- **Comprehensive Testing**: Vitest with unit tests and coverage reporting
+- **Comprehensive Testing**: Unit tests + BDD tests with Vitest, vitest-cucumber, and Playwright
+- **BDD Testing**: Gherkin-based acceptance tests for API endpoints
 - **Error Handling**: Robust error handling throughout the application
 - **Health Check**: Built-in health check endpoint
 - **Docker Support**: Production-ready multi-stage Dockerfile
@@ -146,10 +147,19 @@ pnpm type-check
 
 ### Testing
 
-Run the test suite using Vitest:
+The project uses a comprehensive testing strategy with a single test runner (Vitest) that handles both unit tests and BDD end-to-end tests.
+
+**Test Architecture:**
+
+- **Test Runner**: Vitest (single runner for all tests)
+- **BDD Framework**: vitest-cucumber (CucumberJS integration with Gherkin syntax)
+- **API Testing**: Playwright (used as a library for HTTP request testing)
+- **Total Tests**: 25 tests (19 unit tests + 6 BDD scenario steps)
+
+Run the test suite:
 
 ```bash
-# Run all tests
+# Run all tests (unit + BDD)
 pnpm test
 
 # Run tests in watch mode
@@ -162,13 +172,41 @@ pnpm test:ui
 pnpm test:coverage
 ```
 
-**Test Coverage:**
+**Unit Tests:**
 
-The project includes comprehensive tests for:
+The project includes comprehensive unit tests for:
 
-- **Configuration validation**: Tests for environment variable validation with Zod
-- **RabbitMQ client**: Tests for connection management and event publishing
-- **Webhook route handler**: Tests for request handling, signature verification, and error cases
+- **Configuration validation** (`src/config/index.test.ts`): Environment variable validation with Zod
+- **RabbitMQ client** (`src/lib/rabbitmq.test.ts`): Connection management and event publishing
+- **Webhook route handler** (`src/app/api/webhooks/stripe/route.test.ts`): Request handling, signature verification, and error cases
+
+**BDD End-to-End Tests:**
+
+BDD tests are written in Gherkin syntax and executed through Vitest using vitest-cucumber:
+
+- **Health check scenario** (`e2e/features/health-check.feature`): Tests the health check endpoint
+- **Step definitions** (`e2e/health-check.spec.ts`): Implements test steps using Playwright's API
+
+Example BDD test structure:
+
+```gherkin
+Feature: Health Check
+  Scenario: Health check endpoint returns success
+    Given the webhook service is running
+    When I send a GET request to the health check endpoint
+    Then the response status should be 200
+    And the response should contain status "ok"
+```
+
+The BDD tests use Playwright's request context for API testing, providing:
+
+- Built-in retries and timeouts
+- Request tracing and debugging capabilities
+- Consistent API patterns for potential future browser tests
+
+**Automatic Server Management:**
+
+The test suite automatically starts and stops the Next.js development server using Vitest's global setup. You don't need to manually start the server - just run `pnpm test` and the tests will handle server lifecycle automatically.
 
 Tests are automatically run in the CI/CD pipeline on every push and pull request.
 
@@ -439,6 +477,10 @@ stripe-to-rabbit/
 │   └── lib/
 │       ├── rabbitmq.ts                   # RabbitMQ client
 │       └── rabbitmq.test.ts              # RabbitMQ tests
+├── e2e/
+│   ├── features/
+│   │   └── health-check.feature          # BDD feature file (Gherkin)
+│   └── health-check.spec.ts              # BDD step definitions (vitest-cucumber)
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                        # CI/CD pipeline
