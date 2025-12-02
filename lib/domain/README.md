@@ -284,18 +284,79 @@ In Postgres, `TEXT` and `VARCHAR` have identical performance characteristics, bu
 
 See: [Postgres Documentation on Character Types](https://www.postgresql.org/docs/current/datatype-character.html)
 
+## Repository Pattern
+
+This library provides **repository interfaces** that define how to persist Stripe data. You implement these interfaces using your preferred database:
+
+```typescript
+import type {
+  BillableEntityRepository,
+  SubscriptionRepository,
+  IdempotencyRepository,
+} from '@yourlib/domain';
+```
+
+**Why repositories?**
+
+- ✅ Database-agnostic (works with any database/ORM)
+- ✅ Testable (easy to mock)
+- ✅ Clean architecture (business logic depends on abstractions)
+
+### Using the Drizzle Reference Implementation
+
+```typescript
+import { db } from './db';
+import { users, subscriptions, webhookEvents } from './schema';
+import {
+  DrizzleBillableEntityRepository,
+  DrizzleSubscriptionRepository,
+  DrizzleIdempotencyRepository,
+} from '@yourlib/domain/drizzle';
+
+// Create repository instances
+const billableRepo = new DrizzleBillableEntityRepository(db, users);
+const subscriptionRepo = new DrizzleSubscriptionRepository(db, subscriptions);
+const idempotencyRepo = new DrizzleIdempotencyRepository(db, webhookEvents);
+
+// Use in webhook handler
+if (await idempotencyRepo.isProcessed(event.id)) {
+  return; // Already processed
+}
+
+await subscriptionRepo.upsertSubscription({
+  stripeSubscriptionId: subscription.id,
+  entityId: userId,
+  stripePriceId: subscription.items.data[0].price.id,
+  status: subscription.status,
+  currentPeriodStart: new Date(subscription.current_period_start * 1000),
+  currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+  cancelAtPeriodEnd: subscription.cancel_at_period_end,
+  trialEnd: subscription.trial_end ? new Date(subscription.trial_end * 1000) : null,
+});
+
+await idempotencyRepo.markProcessed(event.id);
+```
+
+See [REPOSITORIES.md](./REPOSITORIES.md) for the complete repository guide.
+
 ## Next Steps
 
 See the [examples directory](./examples/) for complete schema examples:
 
 - [user-schema.example.ts](./examples/user-schema.example.ts) - B2C, B2B, and hybrid billable entity patterns
 - [subscription-schema.example.ts](./examples/subscription-schema.example.ts) - Subscription tables, per-seat pricing, subscription items
+- [idempotency-schema.example.ts](./examples/idempotency-schema.example.ts) - Webhook event tracking
+
+**Guides:**
+
+- [REPOSITORIES.md](./REPOSITORIES.md) - Complete repository pattern guide with examples
 
 ## TypeScript Types
 
-This module also exports domain types for building repositories:
+This module exports domain types and repository interfaces:
 
 ```typescript
+// Domain types
 import type {
   BillableEntity,
   PaymentAttempt,
@@ -303,6 +364,14 @@ import type {
   Subscription,
   SubscriptionItem,
   SubscriptionStatus,
+} from '@yourlib/domain';
+
+// Repository interfaces
+import type {
+  BillableEntityRepository,
+  SubscriptionRepository,
+  IdempotencyRepository,
+  PaymentRepository,
 } from '@yourlib/domain';
 ```
 

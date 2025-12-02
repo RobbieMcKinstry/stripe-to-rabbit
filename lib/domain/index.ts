@@ -34,5 +34,13 @@ export type {
   SubscriptionStatus,
 } from './types';
 
+// Export repository interfaces
+export type {
+  BillableEntityRepository,
+  SubscriptionRepository,
+  IdempotencyRepository,
+  PaymentRepository,
+} from './repositories';
+
 // Re-export Drizzle helpers for convenience
 export * from './drizzle';
