@@ -31,7 +31,9 @@ class TestStripeEventWorker extends StripeEventWorker {
     this.lastCustomerEvent = event;
   }
 
-  protected async handlePaymentIntentSucceeded(event: Stripe.PaymentIntentSucceededEvent): Promise<void> {
+  protected async handlePaymentIntentSucceeded(
+    event: Stripe.PaymentIntentSucceededEvent
+  ): Promise<void> {
     this.handlePaymentIntentSucceededCalled = true;
     this.lastPaymentIntentEvent = event;
   }
@@ -120,11 +122,9 @@ describe('StripeEventWorker', () => {
 
       expect(mockChannel.prefetch).toHaveBeenCalledWith(1);
       expect(mockChannel.assertQueue).toHaveBeenCalledWith('test.queue', { durable: true });
-      expect(mockChannel.consume).toHaveBeenCalledWith(
-        'test.queue',
-        expect.any(Function),
-        { noAck: false }
-      );
+      expect(mockChannel.consume).toHaveBeenCalledWith('test.queue', expect.any(Function), {
+        noAck: false,
+      });
 
       await worker.close();
     });

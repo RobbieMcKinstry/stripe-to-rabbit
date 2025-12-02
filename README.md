@@ -465,7 +465,9 @@ class MyStripeWorker extends StripeEventWorker {
     await saveCustomerToDatabase(customer);
   }
 
-  protected async handlePaymentIntentSucceeded(event: Stripe.PaymentIntentSucceededEvent): Promise<void> {
+  protected async handlePaymentIntentSucceeded(
+    event: Stripe.PaymentIntentSucceededEvent
+  ): Promise<void> {
     const paymentIntent = event.data.object;
     console.log('Payment succeeded:', paymentIntent.id, paymentIntent.amount);
     await fulfillOrder(paymentIntent);

@@ -37,7 +37,9 @@ class MyStripeWorker extends StripeEventWorker {
   }
 
   // Handle successful payments
-  protected async handlePaymentIntentSucceeded(event: Stripe.PaymentIntentSucceededEvent): Promise<void> {
+  protected async handlePaymentIntentSucceeded(
+    event: Stripe.PaymentIntentSucceededEvent
+  ): Promise<void> {
     const paymentIntent = event.data.object;
     console.log('Payment succeeded:', paymentIntent.id, paymentIntent.amount);
 
@@ -46,7 +48,9 @@ class MyStripeWorker extends StripeEventWorker {
   }
 
   // Handle subscription updates
-  protected async handleCustomerSubscriptionUpdated(event: Stripe.CustomerSubscriptionUpdatedEvent): Promise<void> {
+  protected async handleCustomerSubscriptionUpdated(
+    event: Stripe.CustomerSubscriptionUpdatedEvent
+  ): Promise<void> {
     const subscription = event.data.object;
     const previousAttributes = event.data.previous_attributes;
 
@@ -79,19 +83,19 @@ await worker.consume();
 ```typescript
 interface RabbitMQConsumerConfig {
   // Required
-  hostname: string;        // RabbitMQ host
-  username: string;        // RabbitMQ username
-  password: string;        // RabbitMQ password
-  queue: string;           // Queue name to consume from
+  hostname: string; // RabbitMQ host
+  username: string; // RabbitMQ username
+  password: string; // RabbitMQ password
+  queue: string; // Queue name to consume from
 
   // Optional
-  port?: number;           // RabbitMQ port (default: 5672)
-  vhost?: string;          // Virtual host (default: '/')
-  useSSL?: boolean;        // Use SSL/TLS (default: false)
-  prefetchCount?: number;  // Messages to fetch at once (default: 1)
-  connectionTimeout?: number;  // Connection timeout in ms (default: 10000)
-  heartbeat?: number;      // Heartbeat interval in seconds (default: 60)
-  exchange?: string;       // Exchange name (optional, for verification)
+  port?: number; // RabbitMQ port (default: 5672)
+  vhost?: string; // Virtual host (default: '/')
+  useSSL?: boolean; // Use SSL/TLS (default: false)
+  prefetchCount?: number; // Messages to fetch at once (default: 1)
+  connectionTimeout?: number; // Connection timeout in ms (default: 10000)
+  heartbeat?: number; // Heartbeat interval in seconds (default: 60)
+  exchange?: string; // Exchange name (optional, for verification)
 }
 ```
 
@@ -165,7 +169,6 @@ class RobustStripeWorker extends StripeEventWorker {
 
       // Send welcome email
       await sendWelcomeEmail(customer.email);
-
     } catch (error) {
       // Log the error
       console.error('Failed to process customer.created event:', error);
@@ -183,29 +186,41 @@ class RobustStripeWorker extends StripeEventWorker {
 ```typescript
 class ComprehensiveStripeWorker extends StripeEventWorker {
   // Payment events
-  protected async handlePaymentIntentSucceeded(event: Stripe.PaymentIntentSucceededEvent): Promise<void> {
+  protected async handlePaymentIntentSucceeded(
+    event: Stripe.PaymentIntentSucceededEvent
+  ): Promise<void> {
     await this.fulfillOrder(event.data.object);
   }
 
-  protected async handlePaymentIntentPaymentFailed(event: Stripe.PaymentIntentPaymentFailedEvent): Promise<void> {
+  protected async handlePaymentIntentPaymentFailed(
+    event: Stripe.PaymentIntentPaymentFailedEvent
+  ): Promise<void> {
     await this.notifyPaymentFailure(event.data.object);
   }
 
   // Subscription events
-  protected async handleCustomerSubscriptionCreated(event: Stripe.CustomerSubscriptionCreatedEvent): Promise<void> {
+  protected async handleCustomerSubscriptionCreated(
+    event: Stripe.CustomerSubscriptionCreatedEvent
+  ): Promise<void> {
     await this.activateSubscription(event.data.object);
   }
 
-  protected async handleCustomerSubscriptionDeleted(event: Stripe.CustomerSubscriptionDeletedEvent): Promise<void> {
+  protected async handleCustomerSubscriptionDeleted(
+    event: Stripe.CustomerSubscriptionDeletedEvent
+  ): Promise<void> {
     await this.deactivateSubscription(event.data.object);
   }
 
-  protected async handleCustomerSubscriptionTrialWillEnd(event: Stripe.CustomerSubscriptionTrialWillEndEvent): Promise<void> {
+  protected async handleCustomerSubscriptionTrialWillEnd(
+    event: Stripe.CustomerSubscriptionTrialWillEndEvent
+  ): Promise<void> {
     await this.sendTrialEndingNotification(event.data.object);
   }
 
   // Dispute events
-  protected async handleChargeDisputeCreated(event: Stripe.ChargeDisputeCreatedEvent): Promise<void> {
+  protected async handleChargeDisputeCreated(
+    event: Stripe.ChargeDisputeCreatedEvent
+  ): Promise<void> {
     await this.handleDispute(event.data.object);
   }
 
@@ -214,11 +229,15 @@ class ComprehensiveStripeWorker extends StripeEventWorker {
   }
 
   // Invoice events
-  protected async handleInvoicePaymentSucceeded(event: Stripe.InvoicePaymentSucceededEvent): Promise<void> {
+  protected async handleInvoicePaymentSucceeded(
+    event: Stripe.InvoicePaymentSucceededEvent
+  ): Promise<void> {
     await this.processInvoicePayment(event.data.object);
   }
 
-  protected async handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEvent): Promise<void> {
+  protected async handleInvoicePaymentFailed(
+    event: Stripe.InvoicePaymentFailedEvent
+  ): Promise<void> {
     await this.handleFailedInvoice(event.data.object);
   }
 
@@ -271,39 +290,46 @@ class TypeSafeWorker extends StripeEventWorker {
 The library provides handler methods for all 258+ Stripe event types. Each method is strongly typed with its specific event interface. Here are some commonly used ones:
 
 ### Account Events
+
 - `handleAccountUpdated(event: Stripe.AccountUpdatedEvent)`
 - `handleAccountExternalAccountCreated(event: Stripe.AccountExternalAccountCreatedEvent)`
 
 ### Customer Events
+
 - `handleCustomerCreated(event: Stripe.CustomerCreatedEvent)`
 - `handleCustomerUpdated(event: Stripe.CustomerUpdatedEvent)`
 - `handleCustomerDeleted(event: Stripe.CustomerDeletedEvent)`
 
 ### Payment Intent Events
+
 - `handlePaymentIntentSucceeded(event: Stripe.PaymentIntentSucceededEvent)`
 - `handlePaymentIntentPaymentFailed(event: Stripe.PaymentIntentPaymentFailedEvent)`
 - `handlePaymentIntentCreated(event: Stripe.PaymentIntentCreatedEvent)`
 - `handlePaymentIntentCanceled(event: Stripe.PaymentIntentCanceledEvent)`
 
 ### Subscription Events
+
 - `handleCustomerSubscriptionCreated(event: Stripe.CustomerSubscriptionCreatedEvent)`
 - `handleCustomerSubscriptionUpdated(event: Stripe.CustomerSubscriptionUpdatedEvent)`
 - `handleCustomerSubscriptionDeleted(event: Stripe.CustomerSubscriptionDeletedEvent)`
 - `handleCustomerSubscriptionTrialWillEnd(event: Stripe.CustomerSubscriptionTrialWillEndEvent)`
 
 ### Invoice Events
+
 - `handleInvoiceCreated(event: Stripe.InvoiceCreatedEvent)`
 - `handleInvoicePaid(event: Stripe.InvoicePaidEvent)`
 - `handleInvoicePaymentSucceeded(event: Stripe.InvoicePaymentSucceededEvent)`
 - `handleInvoicePaymentFailed(event: Stripe.InvoicePaymentFailedEvent)`
 
 ### Charge Events
+
 - `handleChargeSucceeded(event: Stripe.ChargeSucceededEvent)`
 - `handleChargeFailed(event: Stripe.ChargeFailedEvent)`
 - `handleChargeRefunded(event: Stripe.ChargeRefundedEvent)`
 - `handleChargeDisputeCreated(event: Stripe.ChargeDisputeCreatedEvent)`
 
 ### Checkout Session Events
+
 - `handleCheckoutSessionCompleted(event: Stripe.CheckoutSessionCompletedEvent)`
 - `handleCheckoutSessionExpired(event: Stripe.CheckoutSessionExpiredEvent)`
 
@@ -325,12 +351,12 @@ The `getStats()` method returns:
 
 ```typescript
 interface ConsumerStats {
-  messagesConsumed: number;        // Total messages received
-  messagesAcknowledged: number;    // Successfully processed
-  messagesRejected: number;        // Failed and requeued
-  totalErrors: number;             // Total errors encountered
-  startTime: Date;                 // Consumer start time
-  lastMessageTime?: Date;          // Last message processed
+  messagesConsumed: number; // Total messages received
+  messagesAcknowledged: number; // Successfully processed
+  messagesRejected: number; // Failed and requeued
+  totalErrors: number; // Total errors encountered
+  startTime: Date; // Consumer start time
+  lastMessageTime?: Date; // Last message processed
 }
 ```
 
