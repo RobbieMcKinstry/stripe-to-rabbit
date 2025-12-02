@@ -1,8 +1,10 @@
 # stripe-to-rabbit
 
-A production-ready Next.js webserver that handles Stripe webhooks and publishes events to RabbitMQ for asynchronous processing.
+A production-ready Next.js webserver that handles Stripe webhooks and publishes events to RabbitMQ for asynchronous processing, with a strongly-typed consumer library.
 
 ## Features
+
+### Producer (Web Server)
 
 - **Next.js App Router**: Modern Next.js 14+ with TypeScript support
 - **Stripe Webhook Verification**: Secure webhook signature validation using Stripe SDK
@@ -16,6 +18,15 @@ A production-ready Next.js webserver that handles Stripe webhooks and publishes 
 - **Docker Support**: Production-ready multi-stage Dockerfile
 - **CI/CD**: GitHub Actions for linting, formatting, testing, and build verification
 - **Code Quality**: ESLint and Prettier configured
+
+### Consumer Library
+
+- **Strongly Typed**: All 258+ Stripe event types fully typed with TypeScript
+- **Selective Event Handling**: Override only the event handlers you need
+- **Automatic Event Dispatching**: Events automatically routed to the correct handler methods
+- **Built-in Statistics**: Track message consumption, acknowledgments, and errors
+- **Reliable Message Processing**: Automatic acknowledgment and error handling with requeue
+- **Production Ready**: Connection management, logging, and graceful shutdown
 
 ## Architecture
 
@@ -438,6 +449,51 @@ Examples:
 
 ## Consuming Messages
 
+### Option 1: Using the Stripe Event Consumer Library (Recommended)
+
+This repository includes a strongly-typed consumer library that makes it easy to process Stripe webhook events from RabbitMQ with full type safety.
+
+```typescript
+import { StripeEventWorker } from './lib/consumer';
+import type Stripe from 'stripe';
+
+// Extend StripeEventWorker and override the events you want to handle
+class MyStripeWorker extends StripeEventWorker {
+  protected async handleCustomerCreated(event: Stripe.CustomerCreatedEvent): Promise<void> {
+    const customer = event.data.object;
+    console.log('New customer:', customer.id, customer.email);
+    await saveCustomerToDatabase(customer);
+  }
+
+  protected async handlePaymentIntentSucceeded(event: Stripe.PaymentIntentSucceededEvent): Promise<void> {
+    const paymentIntent = event.data.object;
+    console.log('Payment succeeded:', paymentIntent.id, paymentIntent.amount);
+    await fulfillOrder(paymentIntent);
+  }
+}
+
+const worker = new MyStripeWorker({
+  hostname: 'localhost',
+  username: 'guest',
+  password: 'guest',
+  queue: 'stripe.webhooks',
+});
+
+await worker.consume();
+```
+
+**Key Features:**
+
+- 🔒 **Strongly Typed**: All 258+ Stripe event types are fully typed
+- 🎯 **Selective Processing**: Override only the event handlers you need
+- 🔄 **Automatic Dispatching**: Events are automatically routed to handlers
+- 📊 **Built-in Stats**: Track consumption, acknowledgments, and errors
+- ⚡ **Reliable**: Automatic acknowledgment and error handling
+
+**See the full documentation**: [`lib/consumer/README.md`](./lib/consumer/README.md)
+
+### Option 2: Using amqplib Directly
+
 Example consumer using `amqplib`:
 
 ```typescript
@@ -477,6 +533,13 @@ stripe-to-rabbit/
 │   └── lib/
 │       ├── rabbitmq.ts                   # RabbitMQ client
 │       └── rabbitmq.test.ts              # RabbitMQ tests
+├── lib/
+│   └── consumer/                         # Stripe Event Consumer Library
+│       ├── index.ts                      # Public API exports
+│       ├── stripe-event-worker.ts        # Main worker class
+│       ├── stripe-event-worker.test.ts   # Consumer tests
+│       ├── types.ts                      # TypeScript interfaces
+│       └── README.md                     # Consumer documentation
 ├── e2e/
 │   ├── features/
 │   │   └── health-check.feature          # BDD feature file (Gherkin)
