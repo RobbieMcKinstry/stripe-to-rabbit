@@ -10,6 +10,7 @@ export async function setup() {
   devServer = spawn('pnpm', ['dev'], {
     cwd: resolve(__dirname),
     stdio: 'pipe',
+    detached: process.platform !== 'win32', // Create process group on Unix
     env: {
       ...process.env,
       NODE_ENV: 'development',
@@ -39,7 +40,51 @@ export async function teardown() {
   console.log('Shutting down Next.js dev server...');
 
   if (devServer) {
-    devServer.kill('SIGTERM');
+    // Kill the entire process tree (Next.js spawns child processes)
+    try {
+      // Try to kill the process tree gracefully first
+      if (process.platform === 'win32') {
+        execSync(`taskkill /pid ${devServer.pid} /T /F`, { stdio: 'ignore' });
+      } else {
+        // Kill the entire process group on Unix-like systems
+        process.kill(-devServer.pid!, 'SIGTERM');
+      }
+    } catch (error) {
+      // If that fails, try killing just the main process
+      try {
+        devServer.kill('SIGTERM');
+      } catch (killError) {
+        // Process may already be dead
+      }
+    }
+
+    // Wait for the process to exit (with timeout)
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        // Force kill if still running after 5 seconds
+        try {
+          if (process.platform === 'win32') {
+            execSync(`taskkill /pid ${devServer?.pid} /T /F`, { stdio: 'ignore' });
+          } else {
+            process.kill(-devServer?.pid!, 'SIGKILL');
+          }
+        } catch (error) {
+          // Process already dead
+        }
+        resolve();
+      }, 5000);
+
+      if (devServer) {
+        devServer.on('exit', () => {
+          clearTimeout(timeout);
+          resolve();
+        });
+      } else {
+        clearTimeout(timeout);
+        resolve();
+      }
+    });
+
     devServer = null;
   }
 
