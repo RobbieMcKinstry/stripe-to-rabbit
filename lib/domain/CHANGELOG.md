@@ -29,6 +29,17 @@ All notable changes to the Stripe domain model will be documented in this file.
   - `DrizzleSubscriptionRepository` - Reference Drizzle implementation
   - `DrizzleIdempotencyRepository` - Reference Drizzle implementation
 
+- Webhook event handlers (production-ready business logic):
+  - `handleWebhookEvent()` - Main dispatcher with idempotency and routing
+  - `handleSubscriptionCreatedOrUpdated()` - Process subscription.created/updated events
+  - `handleSubscriptionDeleted()` - Process subscription.deleted events
+  - `createTransactionContext()` - Helper for transaction-scoped processing
+  - `WebhookLogger` interface for custom logging
+  - `WebhookHandlerResult` for monitoring and error tracking
+  - Automatic idempotency checking
+  - Graceful unknown customer handling
+  - Structured error handling and logging
+
 - Documentation:
   - Comprehensive README with usage examples
   - Example schemas for B2C, B2B, and hybrid models
@@ -36,14 +47,17 @@ All notable changes to the Stripe domain model will be documented in this file.
   - Idempotency table schema example
   - Drizzle configuration example
   - TypeScript type inference examples
-  - Webhook integration examples
+  - Complete webhook integration example with Next.js, Express patterns
   - REPOSITORIES.md - Complete repository pattern guide
+  - WEBHOOKS.md - Complete webhook integration guide with best practices
 
 - Testing:
   - Unit tests for Drizzle field helpers (billable and subscription)
   - Repository interface contract tests
   - Type inference validation tests
-  - Real-world usage pattern tests (32 total tests across all modules)
+  - Real-world usage pattern tests
+  - Comprehensive webhook handler tests (idempotency, error handling, event routing)
+  - Integration test examples with mock data
 
 ### Design Decisions
 

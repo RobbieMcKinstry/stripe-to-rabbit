@@ -339,6 +339,57 @@ await idempotencyRepo.markProcessed(event.id);
 
 See [REPOSITORIES.md](./REPOSITORIES.md) for the complete repository guide.
 
+## Webhook Handlers
+
+This library provides **ready-to-use webhook event handlers** that process Stripe events and keep your database in sync:
+
+```typescript
+import { handleWebhookEvent } from '@yourlib/domain/webhooks';
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+export async function POST(request: Request) {
+  const signature = request.headers.get('stripe-signature')!;
+  const event = stripe.webhooks.constructEvent(
+    await request.text(),
+    signature,
+    process.env.STRIPE_WEBHOOK_SECRET!
+  );
+
+  await handleWebhookEvent(event, {
+    billableRepo,
+    subscriptionRepo,
+    idempotencyRepo,
+  });
+
+  return new Response('OK', { status: 200 });
+}
+```
+
+**What the handlers do:**
+
+- ✅ Check idempotency (prevent duplicate processing)
+- ✅ Route events to correct handlers
+- ✅ Create/update subscriptions from Stripe events
+- ✅ Handle unknown customers gracefully
+- ✅ Log errors with structured logging
+- ✅ Return detailed results for monitoring
+
+**Supported events:**
+
+- `customer.subscription.created` - Create subscription record
+- `customer.subscription.updated` - Update subscription (status, price, period)
+- `customer.subscription.deleted` - Mark subscription as canceled
+
+See [WEBHOOKS.md](./WEBHOOKS.md) for the complete webhook integration guide, including:
+
+- Transaction usage (recommended for production)
+- Error handling best practices
+- Custom logging
+- Testing with Stripe CLI
+- Common troubleshooting
+
 ## Next Steps
 
 See the [examples directory](./examples/) for complete schema examples:
@@ -346,10 +397,12 @@ See the [examples directory](./examples/) for complete schema examples:
 - [user-schema.example.ts](./examples/user-schema.example.ts) - B2C, B2B, and hybrid billable entity patterns
 - [subscription-schema.example.ts](./examples/subscription-schema.example.ts) - Subscription tables, per-seat pricing, subscription items
 - [idempotency-schema.example.ts](./examples/idempotency-schema.example.ts) - Webhook event tracking
+- [webhook-integration.example.ts](./examples/webhook-integration.example.ts) - Complete end-to-end webhook integration
 
 **Guides:**
 
 - [REPOSITORIES.md](./REPOSITORIES.md) - Complete repository pattern guide with examples
+- [WEBHOOKS.md](./WEBHOOKS.md) - Complete webhook integration guide with best practices
 
 ## TypeScript Types
 

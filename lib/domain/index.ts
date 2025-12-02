@@ -42,5 +42,15 @@ export type {
   PaymentRepository,
 } from './repositories';
 
+// Export webhook handlers and types
+export {
+  handleWebhookEvent,
+  handleSubscriptionCreatedOrUpdated,
+  handleSubscriptionDeleted,
+  createTransactionContext,
+} from './webhooks';
+
+export type { WebhookHandlerContext, WebhookLogger, WebhookHandlerResult } from './webhooks';
+
 // Re-export Drizzle helpers for convenience
 export * from './drizzle';
