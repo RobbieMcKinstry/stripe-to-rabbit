@@ -121,6 +121,79 @@ export const users = pgTable('users', {
 
 **⚠️ Important:** These fields are **display-only**. Never use them to process payments. Always fetch the current payment method from Stripe when charging.
 
+### `stripeSubscriptionFields()`
+
+Adds core subscription fields for tracking recurring billing locally:
+
+**Fields Added:**
+
+- `stripe_subscription_id` - TEXT, required, unique
+- `stripe_price_id` - TEXT, required (the plan/tier)
+- `status` - TEXT, required (active, canceled, trialing, etc.)
+- `current_period_start` - TIMESTAMP, required
+- `current_period_end` - TIMESTAMP, required (next billing date)
+- `cancel_at_period_end` - BOOLEAN, required, default false
+- `trial_end` - TIMESTAMP, nullable
+
+**Example:**
+
+```typescript
+export const subscriptions = pgTable('subscriptions', {
+  id: serial('id').primaryKey(),
+  user_id: uuid('user_id')
+    .notNull()
+    .references(() => users.id),
+  ...stripeSubscriptionFields(),
+  created_at: timestamp('created_at').notNull().defaultNow(),
+  updated_at: timestamp('updated_at').notNull().defaultNow(),
+});
+```
+
+**Design Decision:** Subscriptions should be in a **separate table**, not columns on your users/organizations table, because:
+
+1. Customers can have multiple subscriptions
+2. Subscription data changes frequently (renewals, status updates)
+3. Cleaner separation of concerns
+
+**Type Inference:**
+
+```typescript
+type Subscription = InferSelectModel<typeof subscriptions>;
+// {
+//   id: number;
+//   user_id: string;
+//   stripe_subscription_id: string;
+//   stripe_price_id: string;  // ← Use this for access control!
+//   status: string;
+//   current_period_end: Date;  // ← Next billing date
+//   cancel_at_period_end: boolean;
+//   trial_end: Date | null;
+//   ...
+// }
+```
+
+### `stripeSubscriptionFieldsWithQuantity()`
+
+Extends `stripeSubscriptionFields()` with quantity field for per-seat pricing:
+
+**Additional Field:**
+
+- `quantity` - TEXT, required, default "1"
+
+**Example:**
+
+```typescript
+// For B2B SaaS with per-seat pricing
+export const subscriptions = pgTable('subscriptions', {
+  id: serial('id').primaryKey(),
+  organization_id: uuid('organization_id').references(() => organizations.id),
+  ...stripeSubscriptionFieldsWithQuantity(),
+});
+
+// Usage: "This org has 15 seats"
+// subscription.quantity === "15"
+```
+
 ## Common Patterns
 
 ### B2C SaaS (Individual Users)
@@ -215,7 +288,8 @@ See: [Postgres Documentation on Character Types](https://www.postgresql.org/docs
 
 See the [examples directory](./examples/) for complete schema examples:
 
-- [user-schema.example.ts](./examples/user-schema.example.ts) - B2C, B2B, and hybrid patterns
+- [user-schema.example.ts](./examples/user-schema.example.ts) - B2C, B2B, and hybrid billable entity patterns
+- [subscription-schema.example.ts](./examples/subscription-schema.example.ts) - Subscription tables, per-seat pricing, subscription items
 
 ## TypeScript Types
 
@@ -227,6 +301,7 @@ import type {
   PaymentAttempt,
   PaymentStatus,
   Subscription,
+  SubscriptionItem,
   SubscriptionStatus,
 } from '@yourlib/domain';
 ```

@@ -30,6 +30,7 @@ export type {
   PaymentAttempt,
   PaymentStatus,
   Subscription,
+  SubscriptionItem,
   SubscriptionStatus,
 } from './types';
 

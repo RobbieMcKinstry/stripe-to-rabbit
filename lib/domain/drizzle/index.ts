@@ -10,3 +10,10 @@ export {
   type StripeBillableFields,
   type StripeBillableFieldsWithPaymentMethod,
 } from './billable';
+
+export {
+  stripeSubscriptionFields,
+  stripeSubscriptionFieldsWithQuantity,
+  type StripeSubscriptionFields,
+  type StripeSubscriptionFieldsWithQuantity,
+} from './subscription';

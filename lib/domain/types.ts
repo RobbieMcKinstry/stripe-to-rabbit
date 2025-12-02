@@ -166,3 +166,45 @@ export interface Subscription {
    */
   metadata?: Record<string, unknown>;
 }
+
+/**
+ * Subscription item record (for multi-product subscriptions).
+ *
+ * Advanced use case: When a single subscription includes multiple products/prices.
+ * Example: A subscription that includes both "API Access" and "Premium Support"
+ *
+ * Most SaaS applications don't need this - only use if you have complex
+ * multi-product subscriptions. For simple single-product subscriptions,
+ * just use the stripePriceId field on the Subscription record.
+ */
+export interface SubscriptionItem {
+  /**
+   * Stripe's subscription item ID (e.g., "si_xxxxxxxxxxxxx")
+   */
+  stripeSubscriptionItemId: string;
+
+  /**
+   * Parent subscription identifier
+   */
+  subscriptionId: string;
+
+  /**
+   * Stripe price ID for this specific item (e.g., "price_xxxxxxxxxxxxx")
+   */
+  stripePriceId: string;
+
+  /**
+   * Quantity for this specific item
+   */
+  quantity: number;
+
+  /**
+   * When the item was created
+   */
+  createdAt: Date;
+
+  /**
+   * When the item record was last updated
+   */
+  updatedAt: Date;
+}
